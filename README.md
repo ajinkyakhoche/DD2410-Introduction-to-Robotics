@@ -10,11 +10,15 @@ This assignment allowed students to get familiarized with ros environment. The o
 
 ## How to execute
 Create a catkin workspace
+
 `mkdir ~/catkin_ws && mkdir ~/catkin_ws/src`
+
 Git clone this repo in src and then:
+
 `catkin_make`
 
 To execute task 2: 
+
 `roslaunch ras_lab1_launch lab1_task2.launch`
 
 To execute task 3:
