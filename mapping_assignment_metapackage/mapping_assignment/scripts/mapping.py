@@ -193,24 +193,57 @@ class Mapping:
 
                 for cell in traversed:
                     self.add_to_map(grid_map, cell[0], cell[1], self.free_space)
-        print(grid_map[:,:])
+
         """
         For C only!
         Fill in the update correctly below.
-        """ 
+        """         
+        #print(grid_map[:,:])
+        #print(self.unknown_space)	# -1
+        #print(self.free_space)		# 0
+        #print(self.c_space)		# -128
+        #print(self.occupied_space)	# -2
+        #print('----------------------------')
+
+        #grid_map_value = grid_map.__getitem__((0:1,0:1))
+        #print(grid_map_value)
+        #print(grid_map.__map[0:1, 0:1])
+        h = grid_map.get_height()
+        w = grid_map.get_width()
+        grid_map_copy = np.zeros((h, w), dtype=int)
+        for i in range(h):
+            for j in range(w):
+                grid_map_copy[i,j] = int(grid_map[i,j])
+
+        #print('grid map mid pt: ' + str(grid_map[3, 3]))
+        #print('grid map_copy mid pt: ' + str(grid_map_copy[3, 3]))
+        known_idx_h, known_idx_w = np.where(grid_map_copy != -1)
+        #min_known_ind_h
+        #print(np.amax(known_idx_w))
+
+
         # Only get the part that has been updated
         update = OccupancyGridUpdate()
         # The minimum x index in 'grid_map' that has been updated
-        update.x = 0
+        update.x = np.amin(known_idx_w)
         # The minimum y index in 'grid_map' that has been updated
-        update.y = 0
+        update.y = np.amin(known_idx_h)
         # Maximum x index - minimum x index + 1
-        update.width = 0
+        update.width = np.amax(known_idx_w) - update.x + 1 
         # Maximum y index - minimum y index + 1
-        update.height = 0
-        # The map data inside the rectangle, in row-major order.
-        update.data = []
+        update.height = np.amax(known_idx_h) - update.y + 1
 
+        #print('update.x :' + str(update.x) + 'update.y :' + str(update.y) + 'update.width :' + str(update.width) + 'update.height :' + str(update.height))
+        
+        # The map data inside the rectangle, in row-major order.
+        temp_update = grid_map_copy[update.y: update.y + update.height, update.x: update.x+update.width]
+        #print('-------'+str(temp_update.shape))
+        for i in range(update.height):
+            for j in range(update.width):
+                update.data.append(temp_update[i,j])
+        #temp_update = (temp_update.T).flatten(order='C') 
+        #update.data = temp_update.tolist()
+        #print(grid_map_copy[update.y+10:update.height, update.x+10:update.width])
         # Return the updated map together with only the
         # part of the map that has been updated
         return grid_map, update
