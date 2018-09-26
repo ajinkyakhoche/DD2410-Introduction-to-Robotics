@@ -1,0 +1,12 @@
+<launch>
+
+  <!-- mapping assignment play.launch -->
+  <include file="$(find mapping_assignment)/launch/play.launch">  
+  </include>
+
+  <!-- play rosbag 
+  <node pkg="rosbag" type="play" name="player" output="screen" args="-l -r 1 --clock $(find mapping_assigment)/bags/stage_1.bag" launch-prefix="xterm -e" /> -->
+
+</launch>
+
+
