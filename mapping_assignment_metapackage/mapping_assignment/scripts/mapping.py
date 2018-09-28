@@ -207,30 +207,6 @@ class Mapping:
 
         for j in range(len(x_grid_map)): 
             self.add_to_map(grid_map, x_grid_map[j], y_grid_map[j], self.occupied_space)
-        # for i in range(scan_data.shape[0]):
-        #     if scan_data[i,1] <= scan.range_min or scan_data[i,1] >= scan.range_max :
-        #         continue
-        #     else:
-        #         #x_robot = scan_data[i,1] * np.cos(scan_data[i,0])
-        #         #y_robot = scan_data[i,1] * np.sin(scan_data[i,0])
-
-        #         x_map = pose.pose.position.x + scan_data[i,1] * np.cos(scan_data[i,0] + robot_yaw)
-        #         y_map = pose.pose.position.y + scan_data[i,1] * np.sin(scan_data[i,0] + robot_yaw)
-
-        #         x_grid_map = int((x_map - origin.position.x)/resolution) 
-        #         y_grid_map = int((y_map - origin.position.y)/resolution) 
-
-        #         # [C part]: use ray trace to update free space
-        #         rob_pos_grid_x = int((pose.pose.position.x - origin.position.x)/resolution)
-        #         rob_pos_grid_y = int((pose.pose.position.y - origin.position.y)/resolution)
-
-        #         traversed = self.raytrace((rob_pos_grid_x, rob_pos_grid_y), (x_grid_map,y_grid_map))
-        #         #print(traversed)
-        #         for cell in traversed:
-        #             if not(grid_map[cell[0], cell[1]] == self.occupied_space or grid_map[cell[0], cell[1]] == self.c_space):
-        #                 self.add_to_map(grid_map, cell[0], cell[1], self.free_space)
-                
-        #         self.add_to_map(grid_map, x_grid_map, y_grid_map, self.occupied_space)
 
 
         """
@@ -313,73 +289,17 @@ class Mapping:
     
         for i in range(h):
             for j in range(w):
-                # if grid_map[i,j] == self.free_space:
-                #     count = 0
-                #     for k in range(self.radius):
-                #         for l in range(self.radius):
-                #             if k == 0 or k == self.radius-1:
-                #                 if l > 0 and l < self.radius - 1:
-                #                     if grid_map[i - int(self.radius/2) + k, j - int(self.radius/2) + l] == self.occupied_space:
-                #                         count = count + 1
-                #                         if count > 0:
-
-
-
                 if grid_map[i,j] == self.occupied_space:  # grid is occupied
-                    for k in range(2*self.radius + 1):
-                        for l in range(2*self.radius + 1):
-                            if k == 0 or k == 2*self.radius:
-                                if l >1 and l < 2*self.radius - 1:
-                                    if not(grid_map[i - self.radius + k, j - self.radius + l] == self.occupied_space):
-                                        self.add_to_map(grid_map, i - self.radius + k, j - self.radius + l, self.c_space)
-                            elif k == 1 or k == 2*self.radius -1:
-                                if l >0 and l < 2*self.radius:
-                                    if not(grid_map[i - self.radius + k, j - self.radius + l] == self.occupied_space):
-                                        self.add_to_map(grid_map, i - self.radius + k, j - self.radius + l, self.c_space)
-                
-
-        # initialize a numpy array of scores, of same size as grid_map
-        # if a grid cell has same state as previous, it's score increases by +3, upto a max of +100
-        # if a grid cell has changed its state, its score reduces by -1, upto a min of 0.
-        # we only consider those cells as occupied, if their status is self.occupied and its grid score is >80
-        # h = grid_map.get_height()
-        # w = grid_map.get_width()
-
-        # grid_map_copy = np.zeros((h, w), dtype=int)
-        # grid_checked = np.zeros((h, w), dtype=int)      # 0 - unchecked, 1 = checked. 
-        # for i in range(h):
-        #     for j in range(w):
-        #         grid_map_copy[i,j] = grid_map[i,j]
-        
-        # occupied_grid = np.where(grid_map_copy == -2)
-        # #print(occupied_grid[0].shape)
-        # for i in range(occupied_grid[0].shape[0]):
-        #     if grid_checked[occupied_grid[0][i],occupied_grid[1][i]] != 1:
-        #         grid_checked[occupied_grid[0][i],occupied_grid[1][i]] = 1   # check current grid
-            
-        #         temp_yy = occupied_grid[0][i] - self.radius
-        #         temp_xx = occupied_grid[1][i] - self.radius
-
-        #         for j in range(2*self.radius + 1): 
-        #             for k in range(2*self.radius + 1):
-        #                 if self.is_in_bounds(grid_map, temp_yy, temp_xx):
-        #                     if (grid_map_copy[temp_yy, temp_xx] == -128):
-        #                         grid_checked[temp_yy,temp_xx] = 1   # if this cell is already occupied  or marked as c_space, check it as 1
-        #                     elif (grid_map_copy[temp_yy, temp_xx] == -1 or grid_map_copy[temp_yy, temp_xx] == 0):
-        #                         # if cell is free or unknown, then mark it as self.c_space
-        #                         self.add_to_map(grid_map, temp_yy, temp_xx, self.c_space)
-        #                         grid_checked[temp_yy, temp_xx] == 1
-        #                         temp_yy = temp_yy + 1
-        #                         temp_xx = temp_xx + 1
+                    for k in range(i - self.radius, i + self.radius):
+                        for l in range(j - self.radius, j + self.radius):
+                            #print(((i-k)**2 + (j-l)**2)**0.5)
+                            if ((i-k)**2 + (j-l)**2)**0.5 <= self.radius:
+                                if not(grid_map[k, l] == self.occupied_space):
+                                    #print('reached here!')                                    
+                                    self.add_to_map(grid_map, k, l, self.c_space)
 
 
-            # if grid_checked[occupied_grid[0][i],occupied_grid[1][i]] != 1:
-            #     grid_checked[occupied_grid[0][i],occupied_grid[1][i]] = 1   # check current grid
-            #     neighbors = self.find_neighbors(occupied_grid[0][i],occupied_grid[1][i])
-            #     # occupied_neighbors = np.where(grid_map_copy[yy,xx] == -2) 
-            #     for j in range(neighbors[0].shape[0]):
-            #         if grid_map_copy[neighbors[0][j][0], neighbors[1][j][0]] == -2:
-            #             grid_checked[neighbors[0][j][0], neighbors[1][j][0]] = 1
+
         # Return the inflated map
         return grid_map
     
