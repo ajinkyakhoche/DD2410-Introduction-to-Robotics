@@ -169,32 +169,44 @@ class Mapping:
         scan_data[:,1] = scan.ranges
         # print('-----scan_data------')
         # print(scan_data)
-        
+        x_map = []
+        y_map = []
+
+        x_grid_map = []
+        y_grid_map = []
+
+        rob_pos_grid_x = []
+        rob_pos_grid_y = []
+
+        count = 0
+
         for i in range(scan_data.shape[0]):
             if scan_data[i,1] <= scan.range_min or scan_data[i,1] >= scan.range_max :
                 continue
             else:
                 #x_robot = scan_data[i,1] * np.cos(scan_data[i,0])
                 #y_robot = scan_data[i,1] * np.sin(scan_data[i,0])
-
-                x_map = pose.pose.position.x + scan_data[i,1] * np.cos(scan_data[i,0] + robot_yaw)
-                y_map = pose.pose.position.y + scan_data[i,1] * np.sin(scan_data[i,0] + robot_yaw)
-
-                x_grid_map = int((x_map - origin.position.x)/resolution) 
-                y_grid_map = int((y_map - origin.position.y)/resolution) 
+                #print(pose.pose.position.x + scan_data[i,1] * np.cos(scan_data[i,0] + robot_yaw))
+                x_map.append(pose.pose.position.x + scan_data[i,1] * np.cos(scan_data[i,0] + robot_yaw))                
+                y_map.append(pose.pose.position.y + scan_data[i,1] * np.sin(scan_data[i,0] + robot_yaw))
+                
+                x_grid_map.append(int((x_map[count] - origin.position.x)/resolution)) 
+                y_grid_map.append(int((y_map[count] - origin.position.y)/resolution)) 
 
                 # [C part]: use ray trace to update free space
-                rob_pos_grid_x = int((pose.pose.position.x - origin.position.x)/resolution)
-                rob_pos_grid_y = int((pose.pose.position.y - origin.position.y)/resolution)
-
-                traversed = self.raytrace((rob_pos_grid_x, rob_pos_grid_y), (x_grid_map,y_grid_map))
+                rob_pos_grid_x.append(int((pose.pose.position.x - origin.position.x)/resolution))
+                rob_pos_grid_y.append(int((pose.pose.position.y - origin.position.y)/resolution))
+                
+                traversed = self.raytrace((rob_pos_grid_x[count], rob_pos_grid_y[count]), (x_grid_map[count],y_grid_map[count]))
                 #print(traversed)
                 for cell in traversed:
-                    if not(grid_map[cell[0], cell[1]] == self.occupied_space or grid_map[cell[0], cell[1]] == self.c_space):
-                        self.add_to_map(grid_map, cell[0], cell[1], self.free_space)
-                
-                self.add_to_map(grid_map, x_grid_map, y_grid_map, self.occupied_space)
+                    #if not(grid_map[cell[0], cell[1]] == self.occupied_space or grid_map[cell[0], cell[1]] == self.c_space):
+                    self.add_to_map(grid_map, cell[0], cell[1], self.free_space)
 
+                count = count + 1 
+
+        for j in range(len(x_grid_map)): 
+            self.add_to_map(grid_map, x_grid_map[j], y_grid_map[j], self.occupied_space)
         # for i in range(scan_data.shape[0]):
         #     if scan_data[i,1] <= scan.range_min or scan_data[i,1] >= scan.range_max :
         #         continue
@@ -208,7 +220,19 @@ class Mapping:
         #         x_grid_map = int((x_map - origin.position.x)/resolution) 
         #         y_grid_map = int((y_map - origin.position.y)/resolution) 
 
+        #         # [C part]: use ray trace to update free space
+        #         rob_pos_grid_x = int((pose.pose.position.x - origin.position.x)/resolution)
+        #         rob_pos_grid_y = int((pose.pose.position.y - origin.position.y)/resolution)
+
+        #         traversed = self.raytrace((rob_pos_grid_x, rob_pos_grid_y), (x_grid_map,y_grid_map))
+        #         #print(traversed)
+        #         for cell in traversed:
+        #             if not(grid_map[cell[0], cell[1]] == self.occupied_space or grid_map[cell[0], cell[1]] == self.c_space):
+        #                 self.add_to_map(grid_map, cell[0], cell[1], self.free_space)
+                
         #         self.add_to_map(grid_map, x_grid_map, y_grid_map, self.occupied_space)
+
+
         """
         For C only!
         Fill in the update correctly below.
@@ -249,6 +273,7 @@ class Mapping:
         
         temp_update = (temp_update).flatten(order='C') 
         update.data = temp_update.tolist()
+        # update.data = []
         # Return the updated map together with only the
         # part of the map that has been updated
         #self.inflate_map(grid_map)
