@@ -110,7 +110,7 @@ class Car(object):
                 xn, yn, thetan = self.step(xl[-1], yl[-1], thetal[-1], controls[i])
 
                 if verbose:
-                    print("x:", xn, "y:", yn, "theta:", thetan)
+                    print("x:", xn, "y:", yn, "theta:", thetan, "time:", times[i+1])
 
                 # record state
                 xl.append(xn)
@@ -129,9 +129,11 @@ class Car(object):
 
                 # terminate if safe or done
                 if not safe:
+                    print('SIMULATION: NOT SAFE!')
                     term = True
                     break
                 elif done:
+                    print('SIMULATION: REACHED GOAL!')
                     term = True
                     break
                 else:
